@@ -1,0 +1,208 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Candidate Assessment</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+         body {
+            background-color: #f4f4f9;
+            font-family: Arial, sans-serif;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            margin-top: 20px;
+        }
+        h2 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        .question {
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        .option-container {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        .option-container label {
+            background: #f0f0f0;
+            padding: 8px 12px;
+            border-radius: 18px;
+            border: 2px solid transparent;
+        }
+        .option-container input[type="radio"]:checked + label {
+            background: #007bff;
+            color: white;
+            border-color: #0056b3;
+        }
+        .btn {
+            margin: 10px 10px 10px 0;
+        }
+    </style>
+    <!-- <script src="calculation.js" defer></script> -->
+    <script defer>
+        const questions = [
+            { number: 1, text: "I follow through on my commitments, even when they become challenging." },
+            { number: 2, text: "I treat everyone at work with respect, regardless of their role or background." },
+            { number: 3, text: "I prefer working in a team rather than on my own when tackling complex tasks." },
+            { number: 4, text: "I adapt my communication style to suit the needs of different individuals or situations." },
+            { number: 5, text: "I actively seek out experiences that broaden my understanding of the world." },
+            { number: 6, text: "I’m excited to learn skills that help me perform better in my role." },
+            { number: 7, text: "I recognize and nurture the strengths of team members to enhance overall performance." },
+            { number: 8, text: "Others find me approachable, and I often serve as a point of connection in group settings." },
+            { number: 9, text: "Working alongside others improves my creativity and helps me generate new ideas." },
+            { number: 10, text: "I work well with others to achieve shared goals, even if it requires compromise." },
+            { number: 11, text: "I enjoy exploring new ideas and concepts, even if they challenge my current beliefs." },
+            { number: 12, text: "I address conflicts or disagreements within the team by fostering mutual respect and understanding." },
+            { number: 13, text: "I effectively prioritize tasks to meet deadlines without feeling overwhelmed." },
+            { number: 14, text: "I often find myself overthinking or worrying about potential problems." },
+            { number: 15, text: "I adapt my thinking and approach when exposed to new information or perspectives." },
+            { number: 16, text: "When I commit to a task, I ensure it is completed to the best of my ability." },
+            { number: 17, text: "I enjoy collaborating with colleagues and value their contributions to the team." },
+            { number: 18, text: "I consistently set clear, achievable goals and work steadily to accomplish them." },
+            { number: 19, text: "I actively seek opportunities to learn and grow in both personal and professional settings." },
+            { number: 20, text: "Spending time with coworkers uplifts my mood and performance." },
+            { number: 21, text: "I find it easy to trust my teammates and rely on them for support." },
+            { number: 22, text: "I take responsibility for leading group efforts and ensuring that everyone stays aligned with the goal." },
+            { number: 23, text: "I follow rules and guidelines, even when no one is watching or enforcing them." },
+            { number: 24, text: "I carefully review my work to ensure there are no errors." },
+            { number: 25, text: "I feel motivated to achieve ambitious goals and continuously strive for improvement." },
+            { number: 26, text: "I tend to stay focused and productive even under tight deadlines or pressure." },
+            { number: 27, text: "I enjoy brainstorming and coming up with creative solutions to challenges." },
+            { number: 28, text: "I adapt my problem-solving approach based on the specific requirements of each situation." },
+            { number: 29, text: "When faced with criticism, I find it difficult to remain unaffected or calm." },
+            { number: 30, text: "I stay optimistic and motivated, even when things do not go as planned." },
+            { number: 31, text: "I often notice small details that others might overlook." },
+            { number: 32, text: "I listen well and understand others' views before giving my opinion." },
+            { number: 33, text: "I make a clear plan before starting any task." },
+            { number: 34, text: "I express my ideas clearly and concisely in both verbal and written communication." },
+            { number: 35, text: "I make an effort to understand others’ perspectives, even if I don’t agree with them." },
+            { number: 36, text: "I often think of unconventional approaches to solving problems or completing tasks." },
+            { number: 37, text: "I feel tense or nervous in high-pressure situations." },
+            { number: 38, text: "I often offer help or support to colleagues without expecting anything in return." },
+            { number: 39, text: "I rarely procrastinate, even when tasks seem tedious or difficult." },
+            { number: 40, text: "I am considerate of others’ feelings when giving feedback or addressing issues." },
+            { number: 41, text: "I find satisfaction in exploring uncharted areas or taking on new challenges." },
+            { number: 42, text: "Little inconveniences often irritate me." },
+            { number: 43, text: "I'm confident in my ability to handle unexpected challenges." },
+            { number: 44, text: "I am open to trying new methods or ideas, even if they are unfamiliar to me." },
+            { number: 45, text: "I identify patterns and connections in information that help me address problems effectively." },
+            { number: 46, text: "I own up to errors promptly and work to correct them." },
+            { number: 47, text: "I remain calm and work toward resolving disagreements constructively." },
+            { number: 48, text: "I analyze problems systematically and consider multiple factors before deciding on a solution." },
+            { number: 49, text: "I enjoy engaging in conversations with new people, even in unfamiliar settings." },
+            { number: 50, text: "I feel comfortable facilitating group communication to discuss, understand and resolve conflicts." },
+            { number: 51, text: "I can stay focused on a task, even when distractions are present." },
+            { number: 52, text: "I feel confident sharing my ideas in group meetings or discussions." },
+            { number: 53, text: "I take responsibility for my actions and work, even when mistakes occur." },
+            { number: 54, text: "I make efforts to connect with people in and out of the workspace to grow my network." },
+            { number: 55, text: "I consistently meet deadlines, even when faced with unexpected challenges." },
+            { number: 56, text: "I value working with people who bring different ideas and perspectives." },
+            { number: 57, text: "I stay calm and make clear decisions in tough situations." },
+            { number: 58, text: "I encourage idea-sharing and teamwork to achieve the best results." },
+            { number: 59, text: "I view feedback as an opportunity to improve and develop my abilities." },
+            { number: 60, text: "I often take the initiative to bring team members together to brainstorm ideas or plan tasks." }
+        ];
+
+        const options = ["Strongly Disagree", "Disagree", "Somewhat Disagree", "Neutral", "Somewhat Agree", "Agree", "Strongly Agree"];
+        let currentPage = 0;
+        const totalPages = Math.ceil(questions.length / 10);
+
+        function loadAnswers() {
+            return JSON.parse(localStorage.getItem('assessmentAnswers')) || {};
+        }
+
+        function savePageAnswers() {
+            const answers = loadAnswers();
+            const start = currentPage * 10;
+            const end = Math.min(start + 10, questions.length);
+            for (let i = start; i < end; i++) {
+                const selected = document.querySelector(`input[name="q${questions[i].number}"]:checked`);
+                if (selected) answers[`q${questions[i].number}`] = parseInt(selected.value);
+            }
+            localStorage.setItem('assessmentAnswers', JSON.stringify(answers));
+        }
+
+        function showPage() {
+            const container = document.getElementById('questionsContainer');
+            container.innerHTML = "";
+            const answers = loadAnswers();
+            const start = currentPage * 10;
+            const end = Math.min(start + 10, questions.length);
+            for (let i = start; i < end; i++) {
+                const q = questions[i];
+                container.innerHTML += `
+                    <div class="question">
+                        <p><strong> ${q.number}.</strong> ${q.text}</p>
+                        <div class="option-container">
+                            ${options.map((opt, idx) => `
+                                <label>
+                                    <input type="radio" name="q${q.number}" value="${idx+1}" ${answers[`q${q.number}`] === idx+1 ? 'checked' : ''} required>
+                                    ${opt}
+                                </label>
+                            `).join('')}
+                        </div>
+                    </div>`;
+            }
+            document.getElementById('pageNumber').innerText = currentPage + 1;
+            document.getElementById('prevBtn').style.display = currentPage === 0 ? 'none' : 'inline-block';
+            document.getElementById('nextBtn').style.display = end >= questions.length ? 'none' : 'inline-block';
+            document.getElementById('submitBtn').style.display = end >= questions.length ? 'inline-block' : 'none';
+        }
+
+        function validatePage() {
+            const start = currentPage * 10;
+            const end = Math.min(start + 10, questions.length);
+            for (let i = start; i < end; i++) {
+                if (!document.querySelector(`input[name="q${questions[i].number}"]:checked`)) {
+                    alert(`Please answer Question ${questions[i].number} before proceeding.`);
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        function nextPage() {
+            if (validatePage()) {
+                savePageAnswers();
+                currentPage++;
+                showPage();
+            }
+        }
+
+        function prevPage() {
+            savePageAnswers();
+            currentPage--;
+            showPage();
+        }
+
+        function submitAssessment(event) {
+            event.preventDefault();
+            if (validatePage()) {
+                savePageAnswers();
+                window.location.href = 'finalReport.html';
+            }
+        }
+
+        window.onload = showPage;
+    </script>
+</head>
+<body>
+    <div class="container mt-4">
+        <h2 id="headerTitle">Page <span id="pageNumber">1</span> of <span id="totalPages">6</span></h2>
+        <form onsubmit="submitAssessment(event)">
+            <div id="questionsContainer"></div>
+            <button type="button" onclick="prevPage()" id="prevBtn" class="btn btn-secondary">Previous</button>
+            <button type="button" onclick="nextPage()" id="nextBtn" class="btn btn-primary">Next</button>
+            <button type="submit" id="submitBtn" class="btn btn-success" style="display:none;">Submit</button>
+        </form>
+    </div>
+</body>
+</html>

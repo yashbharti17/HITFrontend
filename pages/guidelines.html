@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guidelines Page</title>
+    <script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
+</head>
+<body>
+    <div class="container">
+        <div id="questionDate">
+            <h2>Guidelines for Assessment</h2>
+            <ul>
+                <li>Read each question carefully.</li>
+                <li>Answer truthfully and to the best of your ability.</li>
+                <li>Make sure you are in a quiet and comfortable space.</li>
+                <li>Do not rush through the questions.</li>
+                <li>Take your time to think before submitting answers.</li>
+            </ul>
+            
+            <h3>Consent for Data Collection & Usage</h3>
+            <p>By proceeding with this assessment, you acknowledge and agree to the following:</p>
+            <ol>
+                <li><strong>Data Collection & Storage:</strong> Your responses, including assessment scores, may be collected and stored along with optional identifying details (such as name and email) for evaluation purposes.</li>
+                <li><strong>Primary Purpose – Hiring Evaluations:</strong> The collected data is primarily used to assess job suitability for various roles.</li>
+                <li><strong>Secondary Purpose – Research & System Improvement:</strong> Data may be used for research to improve the assessment framework. Only anonymized data will be used.</li>
+                <li><strong>Data Protection & Confidentiality:</strong> Your data will be securely stored and will not be shared with third parties without your explicit consent.</li>
+                <li><strong>User Rights:</strong> You may request access to or deletion of your data at any time, subject to retention policies.</li>
+            </ol>
+            
+            <label>
+                <input type="checkbox" id="consentCheckbox">
+                I have read and agree to the terms of data collection and usage.
+            </label>
+            <button id="proceedButton" disabled>Proceed to Assessment</button>
+        </div>
+    </div>
+    
+    <script>
+        document.getElementById("consentCheckbox").addEventListener("change", function () {
+            document.getElementById("proceedButton").disabled = !this.checked;
+        });
+
+        document.getElementById("fullscreen-btn").addEventListener("click", function () {
+            if (document.documentElement.requestFullscreen) {
+                document.documentElement.requestFullscreen().then(() => {
+                    window.location.href = "assessment.html";
+                }).catch((err) => {
+                    console.error("Error trying to enable fullscreen mode:", err);
+                    alert("Fullscreen mode failed, redirecting anyway.");
+                    window.location.href = "assessment.html";
+                });
+            } else {
+                alert("Fullscreen mode not supported by your browser. Continuing without it.");
+                window.location.href = "assessment.html";
+            }
+        });
+
+        window.history.forward();
+    </script>
+</body>
+</html>

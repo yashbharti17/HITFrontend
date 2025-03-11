@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Guidelines Page</title>
+    <script
+      src="https://code.jquery.com/jquery-3.7.1.js"
+      integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4="
+      crossorigin="anonymous"
+    ></script>
+    <script src="./fullscreen.js"></script>
+  </head>
+
+  <body>
+    <div class="container">
+      <div id="questionDate">
+        <h2>Guidelines for Assessment</h2>
+        <ul>
+          <li>Read each statement carefully before selecting a response.</li>
+          <li>Ensure that every item is answered before submitting.</li>
+          <li>
+            There are no right or wrong answers—choose the response that best
+            reflects your thoughts, feelings, or experiences.
+          </li>
+          <li>Take your time—there is no time limit for this evaluation.</li>
+          <li>
+            For the best insights, respond honestly rather than choosing what
+            you think is the ‘ideal’ answer.
+          </li>
+        </ul>
+
+        <!-- Button to start assessment -->
+        <button
+          id="fullscreen-btn"
+          style="
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 18px;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: 0.3s;
+          "
+        >
+          Start Assessment
+        </button>
+      </div>
+    </div>
+
+    <script>
+      // When the fullscreen button is clicked, toggle fullscreen and move to the first page
+      document
+        .getElementById("fullscreen-btn")
+        .addEventListener("click", function () {
+          toggle_full_screen(); // Toggle fullscreen on click
+
+          // After entering fullscreen, submit the form to move to the first question
+          setTimeout(function () {
+            localStorage.removeItem("savedAnswers");
+            localStorage.removeItem("assessmentScores");
+            localStorage.removeItem("categoryData");
+            loadHtml(1);
+          }, 100); // Wait a bit before submitting to allow fullscreen to activate
+        });
+      window.history.forward();
+    </script>
+  </body>
+</html>

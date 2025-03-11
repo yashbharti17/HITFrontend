@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Executive Panel</title>
+  <link rel="stylesheet" href="../css/style.css"> <!-- Link to external CSS -->
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const token = localStorage.getItem("token");
+
+        if (!token) {
+            alert("Unauthorized access! Please log in first.");
+            window.location.href = "../executive.html"; // Redirect to login page
+        }
+    });
+  </script>
+</head>
+<body>
+  <div class="container">
+    <h1>Executive Panel</h1>
+
+    <!-- Job Selection Dropdown (Populated Dynamically) -->
+    <label for="job-select">Select a Job:</label>
+    <select id="job-select" required>
+      <option value="" disabled selected>--Choose a Job--</option>
+    </select>
+
+    <!-- Candidate Data Table -->
+    <div class="table-container">
+      <table border="1" id="data-table">
+        <thead>
+          <tr>
+            <th>First Name</th>
+            <th>Last Name</th>
+            <th>Phone</th>
+            <th>Email</th>
+            <th>Address</th>
+            <th>Total Score</th>
+            <th>Education</th>
+            <th>Experience</th>
+            <th>Applied For</th>
+            <th>Certificates</th>
+            <th>Skills</th>
+            <th>Resume</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+
+  <script src="../js/datafetch.js"></script> <!-- Link to external JS -->
+</body>
+</html>

@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Job Form Submission</title>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        body { padding: 30px; }
+        .btn-remove { cursor: pointer; color: red; margin-left: 10px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Job Position Form</h2>
+    <form id="jobForm" enctype="multipart/form-data">
+
+        <input type="hidden" id="jobId" name="jobId">
+
+        <div class="form-group">
+            <label>Position Title</label>
+            <input type="text" class="form-control" id="positionTitle" required>
+        </div>
+
+        <div class="form-group">
+            <label>Job Classification</label>
+            <select class="form-control" id="jobClassification">
+                <option value="BA">Business Analyst</option>
+                <option value="PM">Project Manager</option>
+                <option value="Clerical">Clerical</option>
+                <option value="QA">Quality Analyst</option>
+                <option value="Dev">Developer</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Experience in Field</label>
+            <select class="form-control" id="experience">
+                <option value="1-2">1-2 years</option>
+                <option value="3-5">3-5 years</option>
+                <option value="5+">More than 5 years</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Education in Field</label>
+            <select class="form-control" id="education">
+                <option value="BS">Bachelor's (BS)</option>
+                <option value="MS">Master's (MS)</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Location Zip Code</label>
+            <input type="text" class="form-control" id="locationZip" required pattern="\\d{5}">
+        </div>
+
+        <div class="form-group">
+            <label>Certifications Needed</label>
+            <div id="certificationContainer"></div>
+            <button type="button" class="btn btn-sm btn-primary" onclick="addCertification()">Add Certification</button>
+        </div>
+
+        <div class="form-group">
+            <label>Required Tools</label>
+            <div id="toolsContainer"></div>
+            <button type="button" class="btn btn-sm btn-primary" onclick="addTool()">Add Tool</button>
+        </div>
+
+        <div class="form-group">
+            <label>Organization Level</label>
+            <select class="form-control" id="organizationLevel">
+                <option value="Junior">Junior</option>
+                <option value="Senior">Senior</option>
+                <option value="Management">Management</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Attitude</label>
+            <select class="form-control" id="attitude">
+                <option value="Driven">Driven</option>
+                <option value="Cost Effective">Cost Effective</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Comments</label>
+            <textarea class="form-control" id="comments"></textarea>
+        </div>
+
+        <div class="form-group">
+            <label>Job Description</label>
+            <textarea class="form-control" id="jobDescription"></textarea>
+        </div>
+
+        <div class="form-group">
+            <label>Attachments (File Upload)</label>
+            <input type="file" class="form-control-file" id="attachments" multiple>
+        </div>
+
+        <button type="button" class="btn btn-success" onclick="submitForm()">Submit</button>
+    </form>
+</div>
+
+<script>
+// Auto-generate Job ID on load
+document.getElementById('jobId').value = crypto.randomUUID();
+
+function addCertification() {
+    const container = document.getElementById('certificationContainer');
+    
+    const div = document.createElement('div');
+    div.className = 'input-group mb-2';
+    
+    div.innerHTML = `
+        <input type="text" class="form-control" name="certifications[]" placeholder="Enter Certification">
+        <div class="input-group-append">
+            <button class="btn btn-danger" type="button" onclick="this.closest('.input-group').remove()">Remove</button>
+        </div>`;
+    
+    container.appendChild(div);  // Append instead of innerHTML overwrite
+}
+
+function addTool() {
+    const container = document.getElementById('toolsContainer');
+    
+    const div = document.createElement('div');
+    div.className = 'input-group mb-2';
+    
+    div.innerHTML = `
+        <input type="text" class="form-control" name="tools[]" placeholder="Enter Tool">
+        <div class="input-group-append">
+            <button class="btn btn-danger" type="button" onclick="this.closest('.input-group').remove()">Remove</button>
+        </div>`;
+    
+    container.appendChild(div);
+}
+
+async function submitForm() {
+    const formData = new FormData();
+    formData.append("jobId", document.getElementById('jobId').value);
+    formData.append("positionTitle", document.getElementById('positionTitle').value);
+    formData.append("jobClassification", document.getElementById('jobClassification').value);
+    formData.append("experience", document.getElementById('experience').value);
+    formData.append("education", document.getElementById('education').value);
+    formData.append("locationZip", document.getElementById('locationZip').value);
+    formData.append("organizationLevel", document.getElementById('organizationLevel').value);
+    formData.append("attitude", document.getElementById('attitude').value);
+    formData.append("comments", document.getElementById('comments').value);
+    formData.append("jobDescription", document.getElementById('jobDescription').value);
+
+    // Collect certifications
+    document.querySelectorAll('[name="certifications[]"]').forEach(input => {
+        if (input.value.trim()) formData.append("certifications", input.value.trim());
+    });
+
+    // Collect tools
+    document.querySelectorAll('[name="tools[]"]').forEach(input => {
+        if (input.value.trim()) formData.append("tools", input.value.trim());
+    });
+
+    // Collect files
+    const files = document.getElementById('attachments').files;
+    for (const file of files) {
+        formData.append("attachments", file);
+    }
+
+    try {
+        const response = await fetch('https://hitbackend.onrender.com/api/jobs', {  // Update if your backend URL differs
+            method: 'POST',
+            body: formData,
+        });
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`Server error: ${response.status} - ${errorText}`);
+        }
+
+        const result = await response.json();
+        alert(result.message || "Job posted successfully!");
+
+        // Clear form after successful submission
+        document.getElementById('jobForm').reset();
+        document.getElementById('certificationContainer').innerHTML = '';
+        document.getElementById('toolsContainer').innerHTML = '';
+        document.getElementById('jobId').value = crypto.randomUUID();  // New job ID for next post
+    } catch (err) {
+        alert(`Error submitting form: ${err.message}`);
+        console.error('Submission failed', err);
+    }
+}
+</script>
+
+</body>
+</html>

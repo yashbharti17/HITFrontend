@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Executive Login</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <script src="../js/auth.js" defer></script>
+    <script>
+        // ✅ Redirect to Dashboard if User is Already Logged In
+        document.addEventListener("DOMContentLoaded", function () {
+            const token = localStorage.getItem("token");
+
+            if (token) {
+                window.location.href = "executive-dashboard.html"; // Redirect to Dashboard
+            }
+        });
+    </script>
+</head>
+<body>
+    <div class="container">
+        <h2>Executive Login</h2>
+        <form id="login-form">
+            <input type="email" id="email" placeholder="Enter Email" required>
+            <input type="password" id="password" placeholder="Enter Password" required>
+            <button type="submit">Login</button>
+        </form>
+        <p id="error-message"></p>
+    </div>
+</body>
+</html>

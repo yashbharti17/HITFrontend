@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thank You</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 50px;
+            background-color: #f4f4f4;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+            display: inline-block;
+        }
+        h1 {
+            color: #28a745;
+        }
+        p {
+            font-size: 18px;
+            color: #333;
+        }
+        .btn {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            display: inline-block;
+            margin-top: 20px;
+        }
+        .btn:hover {
+            background-color: #0056b3;
+        }
+    </style>
+    <script>
+        // Redirect to homepage after 5 seconds
+        setTimeout(() => {
+            window.location.href = "../index.html";  // Change to your homepage URL
+        }, 5000);
+    </script>
+</head>
+<body>
+
+    <div class="container">
+        <h1>🎉 Thank You! 🎉</h1>
+        <p>Your application has been successfully submitted.</p>
+        <p>We will review your details and get back to you soon.</p>
+        <p>You will be redirected to the homepage in a few seconds.</p>
+        <a href="../index.html" class="btn">Go to Homepage</a>
+    </div>
+
+</body>
+</html>
