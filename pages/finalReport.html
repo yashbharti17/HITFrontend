@@ -3,6 +3,7 @@
 <head>
     <title>Final Report - Candidate Assessment</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
     <script src="../js/finalReport.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -18,25 +19,29 @@
             width: 200px;
             margin: 30px auto;
         }
+
+        .card-header {
+  cursor: pointer;
+}
+.icon {
+  width: 24px; /* Adjust size as needed */
+  height: 24px; /* Adjust size as needed */
+}
+
     </style>
 </head>
 <body>
     <div class="container mt-5">
-        <h2 class="text-center">Candidate Final Report</h2>
+        <h2 class="text-center">Evaluation Result</h2>
         <div class="report-section">
-            <h4 class="text-center">Overall Trait Score Distribution</h4>
+            <h4 class="text-center">Compatibility Scores</h4>
             <canvas id="traitChart"></canvas>
         </div>
-        <h4 class="mt-4">Job-Specific Final Score</h4>
-        <p id="finalScoreDisplay" class="lead"></p>
         <div id="reportContainer" class="mt-4 p-3 border rounded shadow-sm bg-light"></div>
-        <div class="report-section" id="jobSpecificFeedback">
-            <h4 class="text-center">Job-Specific Feedback</h4>
-            <div id="feedbackContainer"></div>
-        </div>
+        <div id="cultureProfileContainer" class="mt-4 p-3 border rounded shadow-sm bg-light"></div>
         
         <!-- Button to end the assessment -->
-        <button id="endAssessmentButton" class="btn btn-primary end-button">Finish Assessment</button>
+        <button id="endAssessmentButton" class="btn btn-primary end-button">Exit</button>
     </div>
 
     <script>

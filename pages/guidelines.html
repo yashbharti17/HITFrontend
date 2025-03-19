@@ -9,39 +9,65 @@
 <body>
     <div class="container">
         <div id="questionDate">
-            <h2>Guidelines for Assessment</h2>
+            <h2>Guidelines for the Evaluation</h2>
             <ul>
-                <li>Read each question carefully.</li>
-                <li>Answer truthfully and to the best of your ability.</li>
-                <li>Make sure you are in a quiet and comfortable space.</li>
-                <li>Do not rush through the questions.</li>
-                <li>Take your time to think before submitting answers.</li>
+                <li>Read each statement carefully before selecting a response.</li>
+                <li>Ensure that every item is answered before submitting.</li>
+                <li>There are no right or wrong answers—choose the response that best reflects your thoughts, feelings, or experiences.</li>
+                <li>Take your time—there is no time limit for this evaluation.</li>
+                <li>For the best insights, respond honestly rather than choosing what you think is the ‘ideal’ answer.</li>
             </ul>
             
-            <h3>Consent for Data Collection & Usage</h3>
-            <p>By proceeding with this assessment, you acknowledge and agree to the following:</p>
+            <h3>Consent to Data Collection & Use</h3>
+            <p>By proceeding with this assessment, you acknowledge and agree to the collection, storage, and use of your data as outlined below:</p>
             <ol>
-                <li><strong>Data Collection & Storage:</strong> Your responses, including assessment scores, may be collected and stored along with optional identifying details (such as name and email) for evaluation purposes.</li>
-                <li><strong>Primary Purpose – Hiring Evaluations:</strong> The collected data is primarily used to assess job suitability for various roles.</li>
-                <li><strong>Secondary Purpose – Research & System Improvement:</strong> Data may be used for research to improve the assessment framework. Only anonymized data will be used.</li>
-                <li><strong>Data Protection & Confidentiality:</strong> Your data will be securely stored and will not be shared with third parties without your explicit consent.</li>
-                <li><strong>User Rights:</strong> You may request access to or deletion of your data at any time, subject to retention policies.</li>
+                <li><strong>Data Storage & Access:</strong>
+                    <ul>
+                        <li>Personal details (Name, Education, etc.) will be stored alongside assessment results.</li>
+                        <li>Only authorized personnel from our team will have access to this data for recruitment and evaluation purposes.</li>
+                    </ul>
+                </li>
+                <li><strong>Use for Hiring & Recruitment:</strong>
+                    <ul>
+                        <li>Assessment results and relevant professional details will be shared with hiring personnel from other companies to assist in candidate evaluation.</li>
+                        <li>Hiring organizations will receive candidate reports but will not have direct access to stored data.</li>
+                    </ul>
+                </li>
+                <li><strong>Use for Research & Test Development:</strong>
+                    <ul>
+                        <li>Anonymized assessment data may be analyzed to improve the test’s accuracy and effectiveness.</li>
+                        <li>No personally identifiable information will be included in research or shared externally.</li>
+                    </ul>
+                </li>
+                <li><strong>Data Protection & Confidentiality:</strong>
+                    <ul>
+                        <li>All collected data will be securely stored and used only for the stated purposes.</li>
+                        <li>Candidates may request data deletion, subject to ongoing recruitment processes.</li>
+                    </ul>
+                </li>
             </ol>
             
             <label>
-                <input type="checkbox" id="consentCheckbox">
-                I have read and agree to the terms of data collection and usage.
+                <input type="checkbox" id="consentHiringCheckbox"> I consent to my data being used for hiring and recruitment purposes.
             </label>
-            <button id="proceedButton" disabled>Proceed to Assessment</button>
+            <br>
+            <label>
+                <input type="checkbox" id="consentResearchCheckbox"> I consent to my anonymized assessment data being used for research and test development.
+            </label>
+            <br>
+            <button id="proceedButton" disabled>Start Evaluation</button>
         </div>
     </div>
     
     <script>
-        document.getElementById("consentCheckbox").addEventListener("change", function () {
-            document.getElementById("proceedButton").disabled = !this.checked;
-        });
+        function updateProceedButton() {
+            document.getElementById("proceedButton").disabled = 
+                !(document.getElementById("consentHiringCheckbox").checked || document.getElementById("consentResearchCheckbox").checked);
+        }
 
-        document.getElementById("fullscreen-btn").addEventListener("click", function () {
+        document.getElementById("consentHiringCheckbox").addEventListener("change", updateProceedButton);
+
+        document.getElementById("proceedButton").addEventListener("click", function () {
             if (document.documentElement.requestFullscreen) {
                 document.documentElement.requestFullscreen().then(() => {
                     window.location.href = "assessment.html";

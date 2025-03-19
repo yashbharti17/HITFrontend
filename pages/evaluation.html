@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Candidate Evaluation</title>
+
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> <!-- Include Chart.js -->
+  <!-- jsPDF & html2canvas for PDF generation -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+</head>
+<body class="bg-light">
+  <div class="container mt-4">
+    <h1 class="text-center mb-4">Candidate Evaluation</h1>
+
+    <!-- Candidate Details and Bar Graph Side by Side -->
+    <div class="row">
+      <!-- Candidate Details -->
+      <div class="col-md-6">
+        <div class="card shadow-sm p-3">
+          <h4 class="text-primary">Candidate Details</h4>
+          <p><strong>Name:</strong> <span id="candidateName"></span></p>
+          <p><strong>Email ID:</strong> <span id="candidateEmail"></span></p>
+          <p><strong>Phone Number:</strong> <span id="candidatePhone"></span></p>
+          <p><strong>Address:</strong> <span id="candidateAddress"></span></p>
+          <p><strong>LinkedIn:</strong> <a id="candidateLinkedInLink" href="#" target="_blank">View Profile</a></p>
+<p id="candidateLinkedIn" style="display: none;"></p> <!-- Hidden for fetching in JS -->
+          <p><strong>Resume:</strong> <a id="candidateResumeLink" href="#" target="_blank">View Resume</a></p>
+          <p id="candidateResume" style="display: none;"></p> <!-- Hidden for fetching in JS -->
+
+        </div>
+      </div>
+
+      <!-- Bar Graph -->
+      <div class="col-md-6">
+        <div class="card shadow-sm p-3">
+          <h4 class="text-primary">Score Distribution</h4>
+          <canvas id="scoreChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Evaluation Report Below -->
+    <div class="row mt-4">
+      <div class="col-12">
+        <div class="card shadow-sm p-3">
+          <h4 class="text-primary">Detailed Analysis of Results</h4>
+          <hr>
+          <div id="reportContainer"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Professional Culture Profile Section -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card shadow-sm p-3">
+            <h4 class="text-primary">Professional Culture Profile</h4>
+            <hr>
+            <div id="cultureProfileContainer"></div> <!-- Separate container -->
+        </div>
+    </div>
+</div>
+
+    <!-- Back Button -->
+    <div class="text-center mt-4">
+        <button class="btn btn-primary" onclick="downloadReport()">Download Report</button>
+      </div>
+      
+  </div>
+
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", async function () {
+        const urlParams = new URLSearchParams(window.location.search);
+        const candidateId = urlParams.get("candidateId");
+
+        if (!candidateId) {
+            alert("Candidate ID is missing!");
+            window.location.href = "executive.html";
+        } else {
+            await fetchCandidateDetails(candidateId); // Fetch Candidate Info
+            await fetchEvaluation(candidateId); // Fetch Evaluation Data
+        }
+    });
+let totalScores;
+    // ✅ Fetch Candidate Details
+    async function fetchCandidateDetails(candidateId) {
+        try {
+            const response = await fetch(`https://hitbackend.onrender.com/api/getCandidate/${candidateId}`);
+            if (!response.ok) {
+                throw new Error("Failed to fetch candidate details.");
+            }
+            const candidateData = await response.json();
+            console.log(candidateData);
+
+            // Extract necessary details
+            const { firstName, lastName, email, phone, linkedin, address,totalScore,resumeLink } = candidateData.data;
+
+
+            // Display in the UI
+            document.getElementById("candidateName").textContent = `${firstName} ${lastName}`;
+            document.getElementById("candidateEmail").textContent = email;
+            document.getElementById("candidatePhone").textContent = phone;
+            document.getElementById("candidateAddress").textContent = address || "N/A";
+            totalScores = totalScore;
+
+            if (linkedin) {
+            document.getElementById("candidateLinkedInLink").href = linkedin;
+            document.getElementById("candidateLinkedInLink").textContent = "View Profile";
+            document.getElementById("candidateLinkedIn").textContent = linkedin; // Store for PDF
+        } else {
+            document.getElementById("candidateLinkedInLink").textContent = "Not Available";
+            document.getElementById("candidateLinkedIn").textContent = "N/A";
+        }
+
+
+              // Resume Link
+        if (resumeLink) {
+            document.getElementById("candidateResumeLink").href = resumeLink;
+            document.getElementById("candidateResume").textContent = resumeLink; // Store for PDF
+        } else {
+            document.getElementById("candidateResumeLink").textContent = "Not Available";
+            document.getElementById("candidateResume").textContent = "N/A";
+        }
+
+        } catch (error) {
+            console.error("Error fetching candidate details:", error);
+            document.getElementById("candidateDetails").innerHTML = "<p>Error loading candidate details.</p>";
+        }
+    }
+
+    // ✅ Fetch Evaluation Report & Scores
+    async function fetchEvaluation(candidateId) {
+        try {
+            const response = await fetch(`https://hitbackend.onrender.com/api/getEvaluation/${candidateId}`);
+            if (!response.ok) {
+                throw new Error("Failed to fetch evaluation.");
+            }
+            const evaluationData = await response.json();
+
+            const reportContainer = document.getElementById("reportContainer");
+            const cultureProfileContainer = document.getElementById("cultureProfileContainer"); // Separate container
+            reportContainer.innerHTML = "";
+            cultureProfileContainer.innerHTML = "";
+
+            const traitLabels = [];
+            const traitScores = [];
+
+            // Populate Evaluation Report
+        for (const traitData of evaluationData.evaluationResults) {
+            const traitName = traitData.trait;
+            const score = traitData.score;
+            const description = traitData.description;
+            const jobCompatibility = traitData.jobCompatibility || 'No specific feedback available.';
+
+            // Check if it's "Professional Culture Profile"
+            if (traitName === "Professional Culture Profile") {
+                cultureProfileContainer.innerHTML += `
+                    <div class="mb-3">
+                        ${description}<br><br>
+                        <em><strong>Job Compatibility:</strong></em> ${jobCompatibility}
+                    </div><hr>
+                `;
+            } else {
+                // Display other traits normally
+                reportContainer.innerHTML += `
+                    <div class="mb-3">
+                        <h5 class="text-dark">${traitName}</h5>
+                        ${description}<br><br>
+                        <em><strong>Job Compatibility:</strong></em> ${jobCompatibility}
+                    </div><hr>
+                `;
+            }
+        }
+
+            // Extract Score Data for Bar Chart
+            for (const traitData of evaluationData.ScoresFactor) {
+                const traitName = traitData.Name;
+                const score = traitData.Score;
+                traitLabels.push(traitName);
+                traitScores.push(score);
+            }
+
+            traitLabels.push("Job Compatible");
+            traitScores.push(totalScores);
+
+            // Call function to create the bar chart
+            createBarChart(traitLabels, traitScores);
+        } catch (error) {
+            console.error("Error fetching evaluation:", error);
+            alert("Failed to fetch evaluation.");
+        }
+    }
+
+    // ✅ Create Bar Chart using Chart.js
+    function createBarChart(labels, scores) {
+    const ctx = document.getElementById('scoreChart').getContext('2d');
+
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Job Compatibility',
+                data: scores,
+                backgroundColor: labels.map(label => label === "Job Compatible" ? 'rgba(255, 99, 132, 0.6)' : 'rgba(54, 162, 235, 0.6)'), // Different color for Job Compatible
+                borderColor: labels.map(label => label === "Job Compatible" ? 'rgba(255, 99, 132, 1)' : 'rgba(54, 162, 235, 1)'),
+                borderWidth: 1,
+                barThickness: 45 // Make bars thinner
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 100
+                }
+            }
+        }
+    });
+}
+
+async function downloadReport() {
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF("p", "mm", "a4");
+
+    // Capture Candidate Details
+    const candidateName = document.getElementById("candidateName").textContent;
+    const candidateEmail = document.getElementById("candidateEmail").textContent;
+    const candidatePhone = document.getElementById("candidatePhone").textContent;
+    const candidateLinkedIn = document.getElementById("candidateLinkedIn").textContent;
+    const candidateAddress = document.getElementById("candidateAddress").textContent;
+    const candidateResume = document.getElementById("candidateResume").textContent;
+
+    pdf.setFontSize(18);
+    pdf.text("Candidate Evaluation Report", 10, 15);
+
+    pdf.setFontSize(12);
+    pdf.text(`Name: ${candidateName}`, 10, 30);
+    pdf.text(`Email: ${candidateEmail}`, 10, 40);
+    pdf.text(`Phone: ${candidatePhone}`, 10, 50);
+    pdf.text(`Address: ${candidateAddress}`, 10, 60);
+
+    // Add LinkedIn Link
+    if (candidateLinkedIn && candidateLinkedIn !== "N/A") {
+        pdf.setTextColor(0, 0, 255); // Blue color for hyperlink
+        pdf.textWithLink("LinkedIn: Click Here", 10, 70, { url: candidateLinkedIn });
+        pdf.setTextColor(0, 0, 0); // Reset text color
+    } else {
+        pdf.text("LinkedIn: Not Available", 10, 70);
+    }
+
+    // Add Resume Link Properly
+    if (candidateResume && candidateResume !== "N/A") {
+        pdf.setTextColor(0, 0, 255); // Blue color for hyperlink
+        pdf.textWithLink("Resume: Click Here", 10, 85, { url: candidateResume });
+        pdf.setTextColor(0, 0, 0); // Reset color
+    } else {
+        pdf.text("Resume: Not Available", 10, 85);
+    }
+
+    // Add Professional Culture Profile Section
+    pdf.setFontSize(14);
+    pdf.setTextColor(0, 0, 0); // Black color
+    pdf.text("Professional Culture Profile", 10, 100);
+    pdf.setFontSize(12);
+
+    const cultureProfileContainer = document.getElementById("cultureProfileContainer");
+    const cultureProfileImage = await html2canvas(cultureProfileContainer);
+    const cultureProfileData = cultureProfileImage.toDataURL("image/png");
+
+    pdf.addImage(cultureProfileData, "PNG", 10, 110, 180, 40); // Adjust size & position
+
+    // Add Bar Chart
+    const chartCanvas = document.getElementById("scoreChart");
+    const chartImage = await html2canvas(chartCanvas);
+    const chartData = chartImage.toDataURL("image/png");
+
+    pdf.addImage(chartData, "PNG", 10, 165, 180, 80); // Adjust position
+
+    // Capture Evaluation Report
+    pdf.addPage(); // Add new page for the report
+    pdf.setFontSize(14);
+    pdf.text("Detailed Evaluation Report", 10, 15);
+    
+    const reportContainer = document.getElementById("reportContainer");
+    const reportImage = await html2canvas(reportContainer);
+    const reportData = reportImage.toDataURL("image/png");
+
+    pdf.addImage(reportData, "PNG", 10, 20, 180, 250); // Adjust size & position
+
+    // Save the PDF
+    pdf.save(`Candidate_Report_${candidateName.replace(/\s/g, "_")}.pdf`);
+}
+
+
+  </script>
+</body>
+</html>

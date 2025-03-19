@@ -1,59 +1,259 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Thank You</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            padding: 50px;
-            background-color: #f4f4f4;
-        }
-        .container {
-            background: white;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
-            display: inline-block;
-        }
-        h1 {
-            color: #28a745;
-        }
-        p {
-            font-size: 18px;
-            color: #333;
-        }
-        .btn {
-            padding: 10px 20px;
-            background-color: #007bff;
-            color: white;
-            text-decoration: none;
-            border-radius: 5px;
-            display: inline-block;
-            margin-top: 20px;
-        }
-        .btn:hover {
-            background-color: #0056b3;
-        }
-    </style>
-    <script>
-        // Redirect to homepage after 5 seconds
-        setTimeout(() => {
-            window.location.href = "../index.html";  // Change to your homepage URL
-        }, 5000);
-    </script>
-</head>
-<body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Survey Form</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+  </head>
+  <body class="bg-light">
+    <div class="container my-5">
+      <div class="card shadow-lg">
+        <div class="card-header bg-primary text-white">
+          <h3 class="mb-0 text-center">User Feedback Survey</h3>
+        </div>
+        <div class="card-body">
+          <form id="surveyForm">
+            <!-- Question 1 -->
+            <div class="mb-4">
+              <label class="form-label fw-bold">
+                1. Did you complete the survey with the minimum number of
+                clicks?
+              </label>
+              <div class="form-check">
+                <input
+                  class="form-check-input"
+                  type="radio"
+                  name="q1"
+                  id="q1Yes"
+                  value="Yes"
+                  required
+                />
+                <label class="form-check-label" for="q1Yes">Yes</label>
+              </div>
+              <div class="form-check">
+                <input
+                  class="form-check-input"
+                  type="radio"
+                  name="q1"
+                  id="q1No"
+                  value="No"
+                />
+                <label class="form-check-label" for="q1No">No</label>
+              </div>
+              <textarea
+                class="form-control mt-2"
+                name="q1Details"
+                rows="2"
+                placeholder="If not, where do you think we could reduce clicks?"
+              ></textarea>
+            </div>
 
-    <div class="container">
-        <h1>🎉 Thank You! 🎉</h1>
-        <p>Your application has been successfully submitted.</p>
-        <p>We will review your details and get back to you soon.</p>
-        <p>You will be redirected to the homepage in a few seconds.</p>
-        <a href="../index.html" class="btn">Go to Homepage</a>
+            <!-- Question 2 -->
+            <div class="mb-4">
+              <label class="form-label fw-bold">
+                2. Please specify where you have hard clicks?
+              </label>
+              <textarea
+                class="form-control"
+                name="q2"
+                rows="3"
+                placeholder="Mention the steps/screens where you faced difficulties."
+              ></textarea>
+            </div>
+
+            <!-- Question 3 -->
+            <div class="mb-4">
+              <label class="form-label fw-bold">
+                3. Was the procedure convenient and user-friendly for you?
+              </label>
+              <div class="form-check">
+                <input
+                  class="form-check-input"
+                  type="radio"
+                  name="q3"
+                  id="q3Yes"
+                  value="Yes"
+                  required
+                />
+                <label class="form-check-label" for="q3Yes">Yes</label>
+              </div>
+              <div class="form-check">
+                <input
+                  class="form-check-input"
+                  type="radio"
+                  name="q3"
+                  id="q3No"
+                  value="No"
+                />
+                <label class="form-check-label" for="q3No">No</label>
+              </div>
+              <textarea
+                class="form-control mt-2"
+                name="q3Details"
+                rows="2"
+                placeholder="If not, what areas could be improved?"
+              ></textarea>
+            </div>
+
+            <!-- Question 4 -->
+            <div class="mb-4">
+              <label class="form-label fw-bold">
+                4. Did you find the psychological assessment easy to
+                understand?
+              </label>
+              <div class="form-check">
+                <input
+                  class="form-check-input"
+                  type="radio"
+                  name="q4"
+                  id="q4Yes"
+                  value="Yes"
+                  required
+                />
+                <label class="form-check-label" for="q4Yes">Yes</label>
+              </div>
+              <div class="form-check">
+                <input
+                  class="form-check-input"
+                  type="radio"
+                  name="q4"
+                  id="q4No"
+                  value="No"
+                />
+                <label class="form-check-label" for="q4No">No</label>
+              </div>
+              <textarea
+                class="form-control mt-2"
+                name="q4Details"
+                rows="2"
+                placeholder="If not, please provide details."
+              ></textarea>
+            </div>
+
+            <!-- Question 5 -->
+            <div class="mb-4">
+              <label class="form-label fw-bold">
+                5. How can we enhance the user experience and improve the
+                overall journey here?
+              </label>
+              <textarea
+                class="form-control"
+                name="q5"
+                rows="3"
+                placeholder="Your suggestions..."
+              ></textarea>
+            </div>
+
+            <!-- Question 6 -->
+            <div class="mb-4">
+              <label class="form-label fw-bold">
+                6. Do you feel the results from the assessment were accurate
+                and met your expectations?
+              </label>
+              <div class="form-check">
+                <input
+                  class="form-check-input"
+                  type="radio"
+                  name="q6"
+                  id="q6Yes"
+                  value="Yes"
+                  required
+                />
+                <label class="form-check-label" for="q6Yes">Yes</label>
+              </div>
+              <div class="form-check">
+                <input
+                  class="form-check-input"
+                  type="radio"
+                  name="q6"
+                  id="q6No"
+                  value="No"
+                />
+                <label class="form-check-label" for="q6No">No</label>
+              </div>
+              <textarea
+                class="form-control mt-2"
+                name="q6Details"
+                rows="2"
+                placeholder="If not, please explain why."
+              ></textarea>
+            </div>
+
+            <!-- Question 7 -->
+            <div class="mb-4">
+              <label class="form-label fw-bold">
+                7. Is there anything else you’d like to share, such as issues
+                or concerns you feel are important for us to know?
+              </label>
+              <textarea
+                class="form-control"
+                name="q7"
+                rows="3"
+                placeholder="Your feedback..."
+              ></textarea>
+            </div>
+
+            <!-- Submit Button -->
+            <div class="d-grid">
+              <button type="submit" class="btn btn-success btn-sm">
+                Submit Feedback
+              </button>
+            </div>
+          </form>
+
+          <!-- Skip Button -->
+          <div class="d-grid mt-3">
+            <button onclick="window.location.href='../index.html';" class="btn btn-secondary btn-sm">
+              Skip to Home
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
 
-</body>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+      document.getElementById('surveyForm').addEventListener('submit', function(event) {
+        event.preventDefault();
+
+        const formData = new FormData(this);
+
+        const data = {
+          q1: formData.get('q1'),
+          q1Details: formData.get('q1Details'),
+          q2: formData.get('q2'),
+          q3: formData.get('q3'),
+          q3Details: formData.get('q3Details'),
+          q4: formData.get('q4'),
+          q4Details: formData.get('q4Details'),
+          q5: formData.get('q5'),
+          q6: formData.get('q6'),
+          q6Details: formData.get('q6Details'),
+          q7: formData.get('q7')
+        };
+
+        fetch('http://localhost:5000/api/submitForm', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(data)
+        })
+        .then(response => response.json())
+        .then(data => {
+          console.log('Form submitted:', data);
+          alert('Feedback submitted successfully!');
+          document.getElementById('surveyForm').reset(); // Reset the form after successful submission
+          window.location.href = '../index.html'; // Redirect to index.html after form submission
+        })
+        .catch((error) => {
+          console.error('Error submitting form:', error);
+        });
+      });
+    </script>
+  </body>
 </html>

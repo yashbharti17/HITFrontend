@@ -8,28 +8,27 @@ document.addEventListener("DOMContentLoaded", function () {
 
     const jobSelect = document.getElementById("job-select");
     const tableBody = document.querySelector("#data-table tbody");
+    const reportContainer = document.getElementById("reportContainer");
+    const evaluationReport = document.getElementById("evaluationReport");
 
-    let jobs = []; // Store job details
-    let candidates = []; // Store candidate data
+    let jobs = [];
+    let candidates = [];
 
     // ✅ Fetch Jobs Data
     async function fetchJobs() {
         try {
-            const response = await fetch("https://hitbackend.onrender.com/api/getJobs"); // Change to your actual API
+            const response = await fetch("https://hitbackend.onrender.com/api/getJobs");
             if (!response.ok) {
                 throw new Error("Failed to fetch job data.");
             }
             jobs = await response.json();
 
-            // Populate job dropdown
             jobs.forEach(job => {
                 const option = document.createElement("option");
-                option.value = job._id;  // Store jobId
-                // Display formatted job title, classification, and date posted
-                option.textContent = `${job.positionTitle} - ${job.jobClassification} (Posted on: ${new Date(job.datePosted).toLocaleDateString()})`;
+                option.value = job._id;
+                option.textContent = `${job.positionTitle} - ${job.jobClassification} (Posted: ${new Date(job.datePosted).toLocaleDateString()})`;
                 jobSelect.appendChild(option);
             });
-
         } catch (error) {
             console.error("Error fetching jobs:", error);
         }
@@ -38,7 +37,7 @@ document.addEventListener("DOMContentLoaded", function () {
     // ✅ Fetch Candidates Data
     async function fetchCandidates() {
         try {
-            const response = await fetch("https://hitbackend.onrender.com/api/candidates"); // Change to your API
+            const response = await fetch("https://hitbackend.onrender.com/api/candidates");
             if (!response.ok) {
                 throw new Error("Failed to fetch candidate data.");
             }
@@ -48,22 +47,22 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-    // ✅ Render Candidates Based on Job Selection
+    // ✅ Render Candidates in Table
     async function renderCandidates() {
         const selectedJobId = jobSelect.value;
         tableBody.innerHTML = "";
 
-        // Filter candidates for the selected job
         const filteredCandidates = candidates.filter(candidate => candidate.jobId === selectedJobId);
 
         if (filteredCandidates.length === 0) {
-            tableBody.innerHTML = "<tr><td colspan='13'>No candidates found for this job.</td></tr>";
+            tableBody.innerHTML = "<tr><td colspan='14'>No candidates found for this job.</td></tr>";
             return;
         }
 
         filteredCandidates.forEach(candidate => {
             const row = document.createElement("tr");
             row.innerHTML = `
+                <td>${candidate.candidateId}</td>
                 <td>${candidate.firstName}</td>
                 <td>${candidate.lastName}</td>
                 <td>${candidate.phone}</td>
@@ -72,14 +71,17 @@ document.addEventListener("DOMContentLoaded", function () {
                 <td>${(candidate.totalScore || 0).toFixed(2)}</td>
                 <td>${candidate.education}</td>
                 <td>${candidate.experience}</td>
-                <td>${getJobTitle(candidate.jobId)}</td>  <!-- Show Job Name -->
+                <td>${getJobTitle(candidate.jobId)}</td>
                 <td>${candidate.certifications ? candidate.certifications.join(", ") : "N/A"}</td>
                 <td>${candidate.skills ? candidate.skills.join(", ") : "N/A"}</td>
                 <td><a href="${candidate.resumeLink}" target="_blank">View Resume</a></td>
+                <td><button onclick="redirectToEvaluation('${candidate.candidateId}')">View Evaluation</button></td>
+
             `;
             tableBody.appendChild(row);
         });
     }
+
 
     // ✅ Get Job Title by jobId
     function getJobTitle(jobId) {
@@ -87,14 +89,55 @@ document.addEventListener("DOMContentLoaded", function () {
         return job ? job.jobClassification : "Unknown Job";
     }
 
-    // ✅ Initialize Data
     async function init() {
-        await fetchJobs(); // Load job options first
-        await fetchCandidates(); // Load candidate data
+        await fetchJobs();
+        await fetchCandidates();
     }
 
     jobSelect.addEventListener("change", renderCandidates);
-    init(); // Start fetching data
+    init();
 });
 
+
+// ✅ Fetch Evaluation Report by Candidate ID
+async function fetchEvaluation(candidateId) {
+    try {
+        const response = await fetch(`https://hitbackend.onrender.com/api/getEvaluation/${candidateId}`);
+        if (!response.ok) {
+            throw new Error("Failed to fetch evaluation.");
+        }
+        const evaluationData = await response.json();
+
+        // Clear previous data
+        reportContainer.innerHTML = "<h4>Detailed Analysis of Results</h4><hr>";
+
+        for (const trait in evaluationData.evaluationResults) {
+            const traitName =evaluationData.evaluationResults[trait].trait;
+            const score = evaluationData.evaluationResults[trait].score;
+            const description = evaluationData.evaluationResults[trait].description;
+            const jobCompatibility = evaluationData.evaluationResults[trait].jobCompatibility;
+
+            reportContainer.innerHTML += `
+                <div class="mb-3">
+                <h5>${traitName}</h5>
+                    <span class="text-muted">Score: ${score}</span><br>
+
+                    ${description}<br>
+                    <em><strong>Job Compatibility:</strong></em> ${jobCompatibility || 'No specific feedback available.'}
+                </div><hr>
+            `;
+        }
+
+        evaluationReport.style.display = "block";
+
+    } catch (error) {
+        console.error("Error fetching evaluation:", error);
+        alert("Failed to fetch evaluation.");
+    }
+}
+
+
+function redirectToEvaluation(candidateId) {
+    window.open(`evaluation.html?candidateId=${candidateId}`, '_blank');
+}
 

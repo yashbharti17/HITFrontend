@@ -35,19 +35,48 @@ async function fetchJobDetails(jobId) {
             <div class="card shadow-lg p-4">
                 <h3>${job.positionTitle}</h3>
                 <p><strong>Classification:</strong> ${job.jobClassification}</p>
+                <p><strong>Organization Level:</strong> ${job.organizationLevel}</p>
                 <p><strong>Experience:</strong> ${job.experience}</p>
                 <p><strong>Location:</strong> ${job.locationZip}</p>
-                <p><strong>Attitude:</strong> ${job.attitude}</p>
-                <p><strong>Job Description:</strong> ${job.jobDescription}</p>
                 <p><strong>Certifications:</strong> ${job.certifications.length > 0 ? job.certifications.join(', ') : "None"}</p>
                 <p><strong>Tools Required:</strong> ${job.tools && job.tools.length > 0 ? job.tools.join(', ') : "None"}</p>
-                <p><strong>Organization Level:</strong> ${job.organizationLevel}</p>
-                <p><strong>Additional Comments:</strong> ${job.comments ? job.comments : "No additional comments"}</p>
+                 <div class="details-container">
+            <div class="about-company">
+                <h4>About the Company</h4>
+                <p>${job.comments ? job.comments : "No additional comments"}</p>
+            </div>
+            <div class="job-description">
+                <h4>Job Description</h4>
+                <p>${job.jobDescription}</p>
+            </div>
+        </div>
+                
                 ${attachmentsHtml}
                 <br><br>
                 <button class="btn btn-success" onclick="applyForJob('${jobId}')">Apply for this Job</button>
             </div>
         `;
+        // Add this CSS to your style section or CSS file
+document.head.insertAdjacentHTML('beforeend', `
+    <style>
+        .details-container {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+        .about-company, .job-description {
+            border-radius: 10px;
+    flex: 1;
+    margin-right: 10px;
+    background: #00000014;
+    padding: 30px;
+}
+        }
+        .job-description {
+            margin-right: 0;
+        }
+    </style>
+`);
 
     } catch (err) {
         console.error('Error fetching job details:', err);

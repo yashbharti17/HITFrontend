@@ -79,11 +79,11 @@ const ranges = {
     [104, 126],
   ], // Added based on image
   Communication_Skills: [
-    [11, 26],
-    [27, 40],
-    [41, 55],
-    [56, 69],
-    [70, 84],
+    [11, 23],
+    [24, 37],
+    [38, 50],
+    [51, 64],
+    [65, 77],
   ],
   Critical_Thinking: [
     [6, 12],
@@ -679,13 +679,10 @@ jobRoleFeedback = {
   },
 };
 function generateJobSpecificReport(jobRole, scores) {
-  console.log(scores);
   const jobFeedback = jobRoleFeedback[jobRole];  // Assuming 'jobRole' is 'PM' or 'Clerical'
-  console.log(jobFeedback);
   const reportSummary = {};
 
   for (const trait in scores) {
-    console.log(trait);
       const score = scores[trait];
       const rangeLabel = getRangeLabel(score, trait);
       const feedback = jobFeedback[trait][rangeLabel];
@@ -693,25 +690,7 @@ function generateJobSpecificReport(jobRole, scores) {
       // Combine the general trait description with job-specific feedback
       reportSummary[trait] = ` ${feedback}`;
   }
-  console.log("heelo");
-  console.log(reportSummary);
   return reportSummary;
-}
-
-
-
-function updateJobSpecificFeedback(jobRole, scores) {
-  console.log("inside job");
-  const feedback = generateJobSpecificReport(jobRole, scores);
-  console.log("again inside job");
-  console.log(feedback);
-  const feedbackContainer = document.getElementById("feedbackContainer");
-  feedbackContainer.innerHTML = '';  // Clear previous feedback
-
-  Object.keys(feedback).forEach(trait => {
-      const feedbackText = feedback[trait];
-      feedbackContainer.innerHTML += `<p><strong>${trait.replace(/_/g, ' ')}:</strong> ${feedbackText}</p>`;
-  });
 }
 
 
@@ -760,28 +739,86 @@ function getRangeLabel(score, trait) {
  * Generate candidate's report based on trait scores and ranges.
  */
 
-
-
-function generateReport() {
+async function generateReport() {
   const scores = calculateScores();
+  console.log(scores);
+  
+  const jobselected = JSON.parse(localStorage.getItem("selectedJob"));
+  const jobRole = jobselected?.jobClassification || "Not Specified";
+
+  const feedback = generateJobSpecificReport(jobRole, scores);
   const container = document.getElementById("reportContainer");
-  container.innerHTML = "<h4>Candidate Feedback Report</h4><hr>";
+  const cultureContainer = document.getElementById("cultureProfileContainer"); // Separate container
+
+  container.innerHTML = "<h4>Detailed Analysis of Results</h4><hr>";
+  cultureContainer.innerHTML = "<h4>Professional Culture Profile</h4><hr>"; // Heading for Culture Profile
+
+  const evaluationResults = []; // Array to store results for localStorage & DB
 
   for (const trait in scores) {
-    const score = scores[trait];
-    const rangeLabel = getRangeLabel(score, trait);
-    const responseText = responses[rangeLabel] + trait.replace(/_/g, " ") + ".";
-    const description = descriptions[trait][rangeLabel];
+      const score = scores[trait];
+      const rangeLabel = getRangeLabel(score, trait);
+      const description = descriptions[trait][rangeLabel];
+      const feedbackText = feedback[trait] || 'No specific feedback available.';
 
-    container.innerHTML += `
+      // Store in array
+      evaluationResults.push({
+          trait: trait.replace(/_/g, " "),
+          score: score,
+          description: description,
+          jobCompatibility: feedbackText
+      });
+
+      // Check if the trait is "Professional Culture Profile" and display it separately
+      if (trait === "Professional_Culture_Profile") {
+          cultureContainer.innerHTML += `
             <div class="mb-3">
-                <strong>${trait.replace(/_/g, " ")}:</strong><br>
-                ${responseText}<br>
-                ${description}
-            </div><hr>
-        `;
+              ${description}<br>
+              <em><strong>Job Compatibility:</strong></em> ${feedbackText}
+            </div><hr>`;
+      } else {
+          // Display other traits normally
+          container.innerHTML += `
+            <div class="mb-3">
+              <strong>${trait.replace(/_/g, " ")}:</strong><br>
+              ${description}<br>
+              <em><strong>Job Compatibility:</strong></em> ${feedbackText}
+            </div><hr>`;
+      }
+  }
+
+  // Save to localStorage
+  localStorage.setItem("evaluationResults", JSON.stringify(evaluationResults));
+
+  // ✅ Send data to backend
+  await saveEvaluationToDB(candidateId, evaluationResults, ScoresFactor);
+}
+
+
+// Function to Send Data to Backend
+async function saveEvaluationToDB(candidateId, evaluationResults) {
+  try {
+      const response = await fetch("https://hitbackend.onrender.com/api/saveEvaluation", {
+          method: "POST",
+          headers: {
+              "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+              candidateId: candidateId,
+              evaluationResults: evaluationResults,
+              ScoresFactor:ScoresFactor
+          }),
+      });
+
+      if (!response.ok) throw new Error("Failed to save evaluation");
+
+      console.log("Evaluation results saved successfully!");
+  } catch (error) {
+      console.error("Error saving evaluation:", error);
   }
 }
+
+
 
 
 /**
@@ -789,81 +826,129 @@ function generateReport() {
  * Clears localStorage after successful submission.
  */
 
-
-
 function generateChart() {
-  const scores = calculateScores(); // Assuming this fetches scores like { Extroversion: 45, Conscientiousness: 50, ... }
+  const jobselected = JSON.parse(localStorage.getItem("selectedJob"));
+  const jobRole = jobselected?.jobClassification || "Not Specified";
+  const rawScores = calculateScores();  // Calculate raw scores
+  const labels = [];
+  const data = [];
+  let totalScore = 0;
+
+  // Fixed colors for each trait
+  const traitColors = {
+    "Openness": "#ff6384",
+    "Conscientiousness": "#36a2eb",
+    "Extroversion": "#ffcd56",
+    "Agreeableness": "#4bc0c0",
+    "Emotional Stability": "#9966ff",
+    "Critical Thinking": "#ff9f40",
+    "Communication Skills": "#c9cbcf",
+    "Leadership Ability": "#ff6666",
+  };
+
+  for (const [trait, score] of Object.entries(rawScores)) {
+    const weight = getJobSpecificWeight(jobRole, trait, score);  // Calculate weight
+    const percentage = (weight / 5) * 100;  // Convert weight to percentage
+    data.push(percentage);
+    labels.push(trait.replace(/_/g, ' '));  // Format trait names
+    totalScore += percentage;
+  }
+
+  // Assign colors AFTER labels are populated
+  const backgroundColors = labels.map(label => traitColors[label] || "#000000");  // Default black if not found
+
+
   const ctx = document.getElementById("traitChart").getContext("2d");
 
-  const labels = Object.keys(scores); // These are the trait names like Extroversion, Openness etc.
-  const data = Object.values(scores); // These are the corresponding scores
+  // Destroy previous chart instance if exists (prevents duplication issues)
+  if (window.myChart) {
+    window.myChart.destroy();
+  }
 
-  new Chart(ctx, {
-    type: "pie",
+  // Create new chart
+  window.myChart = new Chart(ctx, {
+    type: 'doughnut',
     data: {
-      labels: labels, // Add labels here — critical!
-      datasets: [
-        {
-          label: "Trait Scores",
-          data: data,
-          backgroundColor: [
-            "#ff6384",
-            "#36a2eb",
-            "#ffcd56",
-            "#4bc0c0",
-            "#9966ff",
-            "#ff9f40",
-            "#c9cbcf",
-            "#ff6666",
-          ],
-        },
-      ],
+      labels: labels,
+      datasets: [{
+        label: 'Weighted Trait Scores',
+        data: data,
+        backgroundColor: backgroundColors,
+      }]
     },
     options: {
+      cutout: '50%',
+      responsive: true,
+      maintainAspectRatio: true,
       plugins: {
         legend: {
-          display: true,
-          position: "right",
+          display: false,
+          position: 'bottom'
         },
         tooltip: {
+          enabled: true,
           callbacks: {
-            label: function (context) {
-              let label = context.label || "";
-              if (label) {
-                label += ": ";
-              }
-              label += context.raw; // Show score alongside trait
-              return label;
-            },
-          },
-        },
-      },
+            label: function(context) {
+              return `${context.raw.toFixed(2)}% compatible`;  // Show only percentage
+            }
+          }
+        }
+      }
     },
+    plugins: [{
+      afterDraw: function(chart) {
+        const centerX = (chart.chartArea.left + chart.chartArea.right) / 2;
+        const centerY = (chart.chartArea.top + chart.chartArea.bottom) / 2;
+        const ctx = chart.ctx;
+        
+        ctx.save();
+        ctx.fillStyle = '#000000';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.font = '18px Arial';
+    
+        // First line (Percentage)
+        ctx.fillText(`${assessmentTotal.toFixed(2)}%`, centerX, centerY - 8);
+    
+        // Second line (Compatible)
+        ctx.font = '16px Arial'; // Slightly smaller font for second line
+        ctx.fillText("compatible", centerX, centerY + 10);
+        
+        ctx.restore();
+      }
+    }]
+    
   });
 }
-let jobSpecificTotal;
+
+
+
+
+
+
+let assessmentTotal;
+
+
+let candidateId;
 
 window.onload = function () {
-  generateReport();
-  generateChart();
+  
   jobSpecificTotal = calculateJobSpecificScore();
+  generateChart();
+  const detail = JSON.parse(localStorage.getItem("candidateDetails"));
+  candidateId = generateCandidateId(detail.firstName, detail.lastName, detail.phone);
+  generateReport();
+  candidatedetailstosheet();
+  assessmenettosheet();
   submitCandidateForm();
-  const jobselected = JSON.parse(localStorage.getItem("selectedJob"));
-  const job = jobselected?.jobClassification || "Not Specified";
-  const scores = calculateScores();
-  console.log(job);
-  console.log(scores);
-  updateJobSpecificFeedback(job, scores);
-  document.getElementById(
-    "finalScoreDisplay"
-  ).innerText = `Job-Specific Score for ${job}: ${jobSpecificTotal.toFixed(2)}`;
 };
+const ScoresFactor= [];
 
 function calculateJobSpecificScore() {
   const rawScores = calculateScores();
+
   const jobselected = JSON.parse(localStorage.getItem("selectedJob"));
   const candidate = JSON.parse(localStorage.getItem("candidateDetails"));
-  console.log(jobselected);
   console.log(candidate);
 
   if (!jobselected || !candidate) {
@@ -882,13 +967,22 @@ function calculateJobSpecificScore() {
 
   // 2️⃣ **Calculate Additional Factors Score**
   const factorScore = calculateAdditionalFactors(candidate, jobselected);
+  totalScore = (totalScore/40) * 100;
+  assessmentTotal = totalScore;
+  ScoresFactor.push({Name: "Psychological Evaluation", Score: assessmentTotal});
+  
+  localStorage.setItem("ScoresFactor", JSON.stringify(ScoresFactor));
+
+console.log("Factor Scores:", ScoresFactor);  // Debugging log
   totalScore += factorScore;
-  totalScore = (totalScore / 65) * 100;
+  totalScore = (totalScore / 6);
   return totalScore;
 }
 
 function calculateAdditionalFactors(candidate, jobselected) {
+  
   let factorScore = 0;
+  let locscore = 1;
 
   // **1️⃣ Location Distance Score**
   const locationMapping = {
@@ -898,8 +992,12 @@ function calculateAdditionalFactors(candidate, jobselected) {
     "15-20": 2,
     "20+": 1,
   };
-  factorScore += locationMapping[candidate.jobDistance] || 0;
-  console.log("Location Score:", factorScore);
+  locscore = locationMapping[candidate.jobDistance] || 0;
+  locscore = (locscore / 5)*100;
+  ScoresFactor.push({
+    Name: "Location",
+    Score: locscore
+  });
 
   // **2️⃣ Education Score (Dynamic Comparison)**
   const educationLevels = ["BS", "MS"]; // Order matters
@@ -915,8 +1013,11 @@ function calculateAdditionalFactors(candidate, jobselected) {
   } else {
     eduScore = 1; // Lower Level
   }
-  factorScore += eduScore;
-  console.log("Education Score:", eduScore);
+  eduScore = (eduScore / 5)*100;
+  ScoresFactor.push({
+    Name: "Education",
+    Score: eduScore
+  });
 
   // **3️⃣ Experience Score (Dynamic Comparison)**
   const experienceLevels = ["1-2", "3-5", "5+"]; // Order matters
@@ -930,30 +1031,41 @@ function calculateAdditionalFactors(candidate, jobselected) {
   if (candidateIndex === requiredIndex) {
     expScore = 5; // Matches required range
   } else if (candidateIndex === requiredIndex - 1) {
-    expScore = 3; // 1 range below
+    expScore = 3; // 1 range below 
   } else if (candidateIndex < requiredIndex - 1) {
     expScore = 1; // 2 or more ranges below
   }
-  factorScore += expScore;
-  console.log("Experience Score:", expScore);
+  expScore = (expScore / 5)*100;
+  ScoresFactor.push({
+    Name: "Experience",
+    Score: expScore
+  });
 
   // **4️⃣ Certification Score**
   const requiredCerts = jobselected?.certifications || [];
   const candidateCerts = candidate?.certifications || [];
   const matchedCerts = caseInsensitiveMatch(candidateCerts, requiredCerts);
-  const certScore = (matchedCerts / (requiredCerts.length || 1)) * 5;
-  factorScore += certScore;
-  console.log("Certification Score:", certScore);
+  let certScore = (matchedCerts / (requiredCerts.length || 1)) * 5;
+  certScore = (certScore / 5)*100;
+  ScoresFactor.push({
+    Name: "Certificates",
+    Score: certScore
+  });
 
   // **5️⃣ Tools Score**
   const requiredTools = jobselected?.tools || [];
   const candidateTools = candidate?.tools || [];
   const matchedTools = caseInsensitiveMatch(candidateTools, requiredTools);
-  const toolsScore = (matchedTools / (requiredTools.length || 1)) * 5;
-  factorScore += toolsScore;
-  console.log("Tools Score:", toolsScore);
+  let toolsScore = (matchedTools / (requiredTools.length || 1)) * 5;
+  toolsScore = (toolsScore/5)*100;
+  ScoresFactor.push({
+    Name: "Tools",
+    Score: toolsScore
+  });
 
-  console.log("Final Additional Factor Score:", factorScore);
+
+  factorScore = (locscore+eduScore+expScore+certScore+toolsScore);
+
   return factorScore;
 }
 
@@ -1063,7 +1175,7 @@ function getJobSpecificWeight(jobRole, category, score) {
         [53, 63, 5],
       ],
       Communication_Skills: [
-        [12, 26, 1],
+        [11, 26, 1],
         [27, 40, 2],
         [41, 55, 3],
         [56, 69, 4],
@@ -1121,7 +1233,7 @@ function getJobSpecificWeight(jobRole, category, score) {
         [53, 63, 5],
       ],
       Communication_Skills: [
-        [12, 26, 1],
+        [11, 26, 1],
         [27, 40, 2],
         [41, 55, 3],
         [56, 69, 4],
@@ -1179,7 +1291,7 @@ function getJobSpecificWeight(jobRole, category, score) {
         [53, 63, 5],
       ],
       Communication_Skills: [
-        [12, 26, 1],
+        [11, 26, 1],
         [27, 40, 2],
         [41, 55, 3],
         [56, 69, 4],
@@ -1237,7 +1349,7 @@ function getJobSpecificWeight(jobRole, category, score) {
         [53, 63, 5],
       ],
       Communication_Skills: [
-        [12, 26, 1],
+        [11, 26, 1],
         [27, 40, 2],
         [41, 55, 3],
         [56, 69, 4],
@@ -1269,7 +1381,6 @@ function getJobSpecificWeight(jobRole, category, score) {
   }
 
   for (const [min, max, weight] of jobMatrix[category]) {
-    console.log(category);
     if (score >= min && score <= max) {
       return weight;
     }
@@ -1278,13 +1389,14 @@ function getJobSpecificWeight(jobRole, category, score) {
 }
 
 async function submitCandidateForm() {
-  console.log("inside submit function");
 
   const formData = new FormData();
   const storedResume = localStorage.getItem("candidateResume"); // Get resume from local storage
   const detail = JSON.parse(localStorage.getItem("candidateDetails"));
+  console.log(detail);
 
   formData.append("jobId", detail?.jobId || "Not Specified");
+  formData.append("candidateId", candidateId); // Append resume to form data
   formData.append("firstName", detail?.firstName || "Not Specified");
   formData.append("lastName", detail?.lastName || "Not Specified");
   formData.append("email", detail?.email || "Not Specified");
@@ -1293,6 +1405,7 @@ async function submitCandidateForm() {
   formData.append("experience", detail?.experience || "Not Specified");
   formData.append("linkedin", detail?.linkedin || "Not Specified");
   formData.append("address", detail?.address || "Not Specified");
+  
   formData.append("totalScore", jobSpecificTotal);
   formData.append(
     "skills",
@@ -1347,5 +1460,95 @@ async function submitCandidateForm() {
   } catch (err) {
     alert(`Error submitting form: ${err.message}`);
     console.error("Submission failed", err);
+  }
+}
+
+
+const generateCandidateId = (firstName, lastName, phone) => {
+  const firstInitial = firstName.substr(0, 2).toUpperCase(); // First 2 letters of first name
+  const lastInitial = lastName.substr(-2).toUpperCase(); // Last 2 letters of last name
+  const phonePart = phone.replace(/[^0-9]+/g, '').slice(-4); // Last 4 digits of phone number
+  return `${firstInitial}${lastInitial}${phonePart}`;
+};
+
+async function candidatedetailstosheet() {
+  const detail = JSON.parse(localStorage.getItem("candidateDetails"));
+
+
+  const candidateData = {
+      candidateId,
+      firstName: detail?.firstName || "Not Specified",
+      lastName: detail?.lastName || "Not Specified",
+      email: detail?.email || "Not Specified",
+      phone: detail?.phone || "Not Specified",
+      education: detail?.education || "Not Specified",
+      experience: detail?.experience || "Not Specified",
+      linkedin: detail?.linkedin || "Not Specified",
+      address: detail?.address || "Not Specified",
+      totalScore: jobSpecificTotal || "0", // Assuming totalScore is part of 'detail'
+      skills: detail?.skills ? detail.skills.join(", ") : "Not Specified",
+      certifications: detail?.certifications ? detail.certifications.join(", ") : "Not Specified",
+      tools: detail?.tools ? detail.tools.join(", ") : "Not Specified"
+  };
+
+  try {
+      const response = await fetch('https://hitbackend.onrender.com/api/candidateToSheet', {
+          method: 'POST',
+          headers: {
+              'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(candidateData)
+      });
+
+      if (!response.ok) {
+          const errorText = await response.text();
+          throw new Error(`Server error: ${response.status} - ${errorText}`);
+      }
+
+      const result = await response.json();
+  } catch (err) {
+      alert(`Error submitting form: ${err.message}`);
+      console.error("Submission failed", err);
+  }
+}
+
+
+async function assessmenettosheet() {
+  const scores = calculateScores();
+
+
+  const candidateData = {
+      candidateId,
+      agreeableness: scores.Agreeableness || "Not Specified",
+        communicationSkills: scores.Communication_Skills|| "Not Specified",
+        conscientiousness: scores.Conscientiousness || "Not Specified",
+        criticalThinking: scores.Critical_Thinking || "Not Specified",
+        emotionalStability: scores.Emotional_Stability || "Not Specified",
+        extroversion: scores.Extroversion || "Not Specified",
+        leadershipAbility: scores.Leadership_Ability || "Not Specified",
+        openness: scores.Openness || "Not Specified",
+        professionalCultureProfile: scores.Professional_Culture_Profile || "Not Specified"
+  };
+  console.log(candidateData);
+
+
+  try {
+      const response = await fetch('https://hitbackend.onrender.com/api/assessmentosheet', {
+          method: 'POST',
+          headers: {
+              'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(candidateData)
+      });
+
+      if (!response.ok) {
+          const errorText = await response.text();
+          throw new Error(`Server error: ${response.status} - ${errorText}`);
+      }
+
+      const result = await response.json();
+  } catch (err) {
+      alert(`Error submitting form: ${err.message}`);
+      console.error("Submission failed", err);
   }
 }

@@ -120,15 +120,23 @@
         }
 
         function savePageAnswers() {
-            const answers = loadAnswers();
-            const start = currentPage * 10;
-            const end = Math.min(start + 10, questions.length);
-            for (let i = start; i < end; i++) {
-                const selected = document.querySelector(`input[name="q${questions[i].number}"]:checked`);
-                if (selected) answers[`q${questions[i].number}`] = parseInt(selected.value);
+    const answers = loadAnswers();
+    const start = currentPage * 10;
+    const end = Math.min(start + 10, questions.length);
+    
+    for (let i = start; i < end; i++) {
+        const selected = document.querySelector(`input[name="q${questions[i].number}"]:checked`);
+        if (selected) {
+            let value = parseInt(selected.value);
+            // Reverse scoring for specific questions
+            if ([14, 37, 42, 29].includes(questions[i].number)) {
+                value = 8 - value;  // Reverse the scoring (1->7, 2->6, etc.)
             }
-            localStorage.setItem('assessmentAnswers', JSON.stringify(answers));
+            answers[`q${questions[i].number}`] = value;
         }
+    }
+    localStorage.setItem('assessmentAnswers', JSON.stringify(answers));
+}
 
         function showPage() {
             const container = document.getElementById('questionsContainer');
@@ -151,6 +159,7 @@
                         </div>
                     </div>`;
             }
+            window.scrollTo(0, 0); 
             document.getElementById('pageNumber').innerText = currentPage + 1;
             document.getElementById('prevBtn').style.display = currentPage === 0 ? 'none' : 'inline-block';
             document.getElementById('nextBtn').style.display = end >= questions.length ? 'none' : 'inline-block';
